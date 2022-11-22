@@ -2,11 +2,14 @@ const {
     getAllLaunches,
     addNewLaunch,
     existsLaunchWithId,
-    abortLaunch,
+    abortLaunchById,
 } = require('../../models/launches.model');
+const { getPagination } = require('../../services/query');
 
-const httpGetAllLaunches = (req, res) => {
-    return res.status(200).json(getAllLaunches());
+const httpGetAllLaunches = async (req, res) => {
+    const { skip, limit } = getPagination(req.query);
+
+    return res.status(200).json(await getAllLaunches(skip, limit));
 };
 
 const httpAddNewLaunch = (req, res) => {
@@ -36,7 +39,7 @@ const httpAddNewLaunch = (req, res) => {
     return res.status(201).json(launch);
 };
 
-const httpDeleteLaunch = (req, res) => {
+const httpDeleteLaunch = async (req, res) => {
     const id = Number(req.params.id);
 
     if (!existsLaunchWithId(id))
@@ -44,7 +47,7 @@ const httpDeleteLaunch = (req, res) => {
             error: 'Launch not found',
         });
 
-    const aborted = abortLaunch(id);
+    const aborted = await abortLaunchById(id);
     return res.status(200).json(aborted);
 };
 
